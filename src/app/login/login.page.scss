@@ -1,0 +1,22 @@
+.tb {
+  --background: #78350f;
+  --color: #fff;
+  font-weight: 700;
+}
+.seg { margin-bottom: 12px; }
+.campos ion-item {
+  --background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+.aviso {
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 8px 0;
+}
+.aviso.erro { background: #fee2e2; color: #991b1b; }
+.main { --background: #78350f; --border-radius: 12px; font-weight: 700; margin-top: 10px; }
+.google { --color: #78350f; --border-color: #78350f; --border-radius: 12px; font-weight: 700; }

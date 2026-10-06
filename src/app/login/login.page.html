@@ -1,0 +1,38 @@
+<ion-header>
+  <ion-toolbar class="tb">
+    <ion-title>Biblioteca Livre</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-segment [(ngModel)]="modo" class="seg">
+    <ion-segment-button value="entrar"><ion-label>Entrar</ion-label></ion-segment-button>
+    <ion-segment-button value="cadastrar"><ion-label>Cadastrar</ion-label></ion-segment-button>
+  </ion-segment>
+
+  <ion-list lines="none" class="campos">
+    <ion-item>
+      <ion-input type="email" label="E-mail" labelPlacement="floating"
+        autocomplete="email" [(ngModel)]="email"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input type="password" label="Senha" labelPlacement="floating"
+        autocomplete="current-password" [(ngModel)]="senha"
+        (keyup.enter)="enviar()"></ion-input>
+    </ion-item>
+  </ion-list>
+
+  @if (erro) {
+    <div class="aviso erro">{{ erro }}</div>
+  }
+
+  <ion-button expand="block" class="main" [disabled]="carregando" (click)="enviar()">
+    @if (carregando) { <ion-spinner name="dots"></ion-spinner> }
+    @else { {{ modo === 'entrar' ? 'Entrar' : 'Criar conta' }} }
+  </ion-button>
+
+  <ion-button expand="block" fill="outline" class="google"
+    [disabled]="carregando" (click)="google()">
+    Entrar com Google
+  </ion-button>
+</ion-content>
