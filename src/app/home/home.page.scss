@@ -1,27 +1,59 @@
-#container {
+.tb {
+  --background: #78350f;
+  --color: #fff;
+  font-weight: 700;
+}
+
+.aviso {
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 8px 0;
+}
+.aviso.info { background: #e0f2fe; color: #075985; }
+.aviso.erro { background: #fee2e2; color: #991b1b; }
+.aviso.warn { background: #fef3c7; color: #92400e; }
+
+.filtros { margin: 8px 0; }
+.grupo {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-right: 6px;
+}
+.chip {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 0.78rem;
+  margin: 0 4px 6px 0;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chip.on { background: #0f766e; color: #fff; }
+.estrela-chip.on { background: #f59e0b; color: #451a03; }
+
+.vazio {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 18px 12px;
+  margin-bottom: 8px;
   text-align: center;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.92rem;
 }
+.vazio .muted { color: #64748b; font-size: 0.8rem; }
 
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
+.total {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed #cbd5e1;
+  font-size: 0.92rem;
 }
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-
-  color: #8c8c8c;
-
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
-}
+.total .linha { display: flex; justify-content: space-between; margin: 4px 0; }
+.total .g { font-size: 1.05rem; font-weight: 800; }

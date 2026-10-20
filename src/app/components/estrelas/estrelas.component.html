@@ -1,0 +1,7 @@
+<div class="estrelas" role="group" aria-label="Nota do livro">
+  <button type="button" class="estrela" *ngFor="let v of valores"
+    [class.cheia]="nota !== null && v <= nota"
+    [attr.aria-label]="v + (v === 1 ? ' estrela' : ' estrelas')"
+    (click)="escolher(v)">★</button>
+  <span class="texto">{{ nota === null ? 'sem nota' : nota + '/5' }}</span>
+</div>

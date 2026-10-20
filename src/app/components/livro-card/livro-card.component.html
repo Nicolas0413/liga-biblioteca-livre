@@ -1,0 +1,27 @@
+<div class="item">
+  <div class="capa">
+    @if (livro.capa && !capaFalhou) {
+      <img [src]="livro.capa" [alt]="'Capa de ' + livro.titulo"
+        loading="lazy" (error)="aoFalharCapa()" />
+    } @else {
+      <span class="sem-capa">📖<small>sem capa</small></span>
+    }
+  </div>
+
+  <div class="info">
+    <strong>{{ livro.titulo }}</strong>
+    <div>
+      <span class="badge" [class.ok]="livro.status === 'disponivel'"
+        [class.bad]="livro.status !== 'disponivel'">
+        {{ rotulo[livro.status] }}
+      </span>
+    </div>
+    <app-estrelas [nota]="livro.nota" (avaliar)="darNota($event)"></app-estrelas>
+  </div>
+
+  @if (livro.status === 'disponivel') {
+    <ion-button size="small" class="main" (click)="pedirEmprestimo()">
+      Emprestar
+    </ion-button>
+  }
+</div>
