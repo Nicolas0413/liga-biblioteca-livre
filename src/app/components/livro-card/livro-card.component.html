@@ -23,5 +23,10 @@
     <ion-button size="small" class="main" (click)="pedirEmprestimo()">
       Emprestar
     </ion-button>
+  } @else {
+    <ion-button size="small" class="bloqueado" disabled
+      [attr.aria-label]="'Empréstimo bloqueado: livro ' + rotulo[livro.status]">
+      —
+    </ion-button>
   }
 </div>

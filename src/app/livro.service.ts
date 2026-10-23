@@ -1,7 +1,11 @@
 import { Injectable, computed, signal } from '@angular/core';
 import {
-  FiltroLivro, Livro, OrdemLivro, ResultadoAvaliacao, ResultadoEmprestimo,
-  TotaisLivros,
+  collection, doc, getDocs, serverTimestamp, writeBatch,
+} from 'firebase/firestore';
+import { auth, db } from './firebase';
+import {
+  FiltroLivro, Livro, OrdemLivro, RegistroEmprestimo, ResultadoAvaliacao,
+  ResultadoEmprestimo, ROTULO_STATUS, StatusLivro, TotaisLivros,
 } from './models';
 
 @Injectable({ providedIn: 'root' })
@@ -67,7 +71,26 @@ export class LivroService {
     this._ordem.set(ordem);
   }
 
-  emprestar(id: string): ResultadoEmprestimo {
+  async carregar(): Promise<void> {
+    try {
+      const snap = await getDocs(collection(db, 'livros'));
+      const salvos = new Map<string, StatusLivro>();
+      snap.forEach((d) => {
+        const status = d.data()['status'];
+        if (typeof status === 'string' && status in ROTULO_STATUS) {
+          salvos.set(d.id, status as StatusLivro);
+        }
+      });
+      this._livros.update((lista) =>
+        lista.map((l) => (salvos.has(l.id) ? { ...l, status: salvos.get(l.id)! } : l)),
+      );
+    } catch (e) {
+      console.warn('Firestore indisponível, usando a lista local', e);
+    }
+  }
+
+
+  async emprestar(id: string): Promise<ResultadoEmprestimo> {
     const livro = this._livros().find((l) => l.id === id);
 
     if (!livro) {
@@ -80,10 +103,39 @@ export class LivroService {
       return { ok: false, mensagem: 'Este livro está indisponível' };
     }
 
-    this._livros.update((lista) =>
-      lista.map((l) => (l.id === id ? { ...l, status: 'emprestado' } : l)),
-    );
-    return { ok: true, mensagem: 'Empréstimo registrado' };
+    this.atualizar(id, { status: 'emprestado' });
+
+    const usuario = auth.currentUser;
+    const registro: RegistroEmprestimo = {
+      livroId: livro.id,
+      titulo: livro.titulo,
+      acao: 'emprestar',
+      statusAnterior: livro.status,
+      status: 'emprestado',
+      usuarioUid: usuario?.uid ?? null,
+      usuarioEmail: usuario?.email ?? null,
+      totais: this.totais(), 
+    };
+
+    try {
+      const lote = writeBatch(db);
+      lote.set(
+        doc(db, 'livros', id),
+        { titulo: livro.titulo, status: 'emprestado' },
+        { merge: true },
+      );
+      lote.set(doc(collection(db, 'emprestimos')), {
+        ...registro,
+        criadoEm: serverTimestamp(),
+      });
+      await lote.commit();
+      return { ok: true, mensagem: 'Empréstimo registrado' };
+    } catch (e) {
+
+      this.atualizar(id, { status: livro.status });
+      console.error('Erro ao gravar empréstimo', e);
+      return { ok: false, mensagem: 'Não foi possível gravar o empréstimo. Tente de novo.' };
+    }
   }
 
   avaliar(id: string, nota: number): ResultadoAvaliacao {
@@ -95,14 +147,18 @@ export class LivroService {
       return { ok: false, mensagem: 'Livro não encontrado' };
     }
 
-    this._livros.update((lista) =>
-      lista.map((l) => (l.id === id ? { ...l, nota } : l)),
-    );
+    this.atualizar(id, { nota });
     const plural = nota === 1 ? 'estrela' : 'estrelas';
     return {
       ok: true,
       mensagem: `${livro.titulo}: ${nota} ${plural} registrada`,
     };
+  }
+
+  private atualizar(id: string, mudanca: Partial<Livro>): void {
+    this._livros.update((lista) =>
+      lista.map((l) => (l.id === id ? { ...l, ...mudanca } : l)),
+    );
   }
 
   private ordenar(lista: Livro[], ordem: OrdemLivro): Livro[] {

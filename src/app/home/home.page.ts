@@ -1,5 +1,5 @@
 import { NgFor } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar,
@@ -22,7 +22,7 @@ import {
     LivroCardComponent,
   ],
 })
-export class HomePage {
+export class HomePage implements OnInit {
   private auth = inject(AuthService);
   private router = inject(Router);
   private livroService = inject(LivroService);
@@ -38,6 +38,10 @@ export class HomePage {
   mensagemVazio = computed(() => MSG_VAZIO[this.filtro()]);
   aviso = signal<ResultadoAcao | null>(null);
 
+  ngOnInit() {
+    this.livroService.carregar();
+  }
+
   porId(_: number, livro: Livro) {
     return livro.id;
   }
@@ -50,8 +54,8 @@ export class HomePage {
     this.livroService.definirOrdem(o);
   }
 
-  emprestar(id: string) {
-    this.aviso.set(this.livroService.emprestar(id));
+  async emprestar(id: string) {
+    this.aviso.set(await this.livroService.emprestar(id));
   }
 
   avaliar(e: AvaliacaoEvento) {

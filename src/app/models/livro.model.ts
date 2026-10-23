@@ -56,3 +56,14 @@ export const ORDENS_LIVRO: { valor: OrdemLivro; rotulo: string }[] = [
   { valor: 'maior', rotulo: '★ Mais estrelas' },
   { valor: 'menor', rotulo: '★ Menos estrelas' },
 ];
+
+export interface RegistroEmprestimo {
+  livroId: string;
+  titulo: string;
+  acao: 'emprestar';
+  statusAnterior: StatusLivro;
+  status: StatusLivro;
+  usuarioUid: string | null;
+  usuarioEmail: string | null;
+  totais: TotaisLivros;
+}

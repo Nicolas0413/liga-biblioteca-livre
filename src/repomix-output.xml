@@ -1,0 +1,1100 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+app/
+  components/
+    estrelas/
+      estrelas.component.html
+      estrelas.component.scss
+      estrelas.component.ts
+    livro-card/
+      livro-card.component.html
+      livro-card.component.scss
+      livro-card.component.ts
+  home/
+    home.page.html
+    home.page.scss
+    home.page.spec.ts
+    home.page.ts
+  login/
+    login.page.html
+    login.page.scss
+    login.page.ts
+  models/
+    index.ts
+    livro.model.ts
+  app.component.html
+  app.component.scss
+  app.component.spec.ts
+  app.component.ts
+  app.routes.ts
+  auth.guard.ts
+  auth.service.ts
+  firebase.ts
+  livro.service.ts
+assets/
+  capas/
+    fabula_ultima.jpg
+    ordem_paranormal.jpg
+    tormenta_20.jpg
+    umineko.jpg
+    vampiro_a_mascara.jpg
+  icon/
+    favicon.png
+  shapes.svg
+environments/
+  environment.prod.ts
+  environment.ts
+theme/
+  variables.scss
+global.scss
+index.html
+main.ts
+test-setup.ts
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="app/components/estrelas/estrelas.component.html">
+<div class="estrelas" role="group" aria-label="Nota do livro">
+  <button type="button" class="estrela" *ngFor="let v of valores"
+    [class.cheia]="nota !== null && v <= nota"
+    [attr.aria-label]="v + (v === 1 ? ' estrela' : ' estrelas')"
+    (click)="escolher(v)">★</button>
+  <span class="texto">{{ nota === null ? 'sem nota' : nota + '/5' }}</span>
+</div>
+</file>
+
+<file path="app/components/estrelas/estrelas.component.scss">
+.estrelas {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.estrela {
+  background: none;
+  border: 0;
+  padding: 0 1px;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+.estrela.cheia { color: #f59e0b; }
+.estrela:hover { transform: scale(1.15); }
+
+.texto {
+  margin-left: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+}
+</file>
+
+<file path="app/components/estrelas/estrelas.component.ts">
+import { NgFor } from '@angular/common';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+
+@Component({
+  selector: 'app-estrelas',
+  templateUrl: './estrelas.component.html',
+  styleUrls: ['./estrelas.component.scss'],
+  imports: [NgFor],
+})
+export class EstrelasComponent {
+  /** Nota atual (1 a 5) ou null quando o livro ainda não tem nota. */
+  @Input() nota: number | null = null;
+
+  /** Emite a estrela escolhida pelo usuário. */
+  @Output() avaliar = new EventEmitter<number>();
+
+  valores = [1, 2, 3, 4, 5];
+
+  escolher(valor: number) {
+    this.avaliar.emit(valor);
+  }
+}
+</file>
+
+<file path="app/components/livro-card/livro-card.component.html">
+<div class="item">
+  <div class="capa">
+    @if (livro.capa && !capaFalhou) {
+      <img [src]="livro.capa" [alt]="'Capa de ' + livro.titulo"
+        loading="lazy" (error)="aoFalharCapa()" />
+    } @else {
+      <span class="sem-capa">📖<small>sem capa</small></span>
+    }
+  </div>
+
+  <div class="info">
+    <strong>{{ livro.titulo }}</strong>
+    <div>
+      <span class="badge" [class.ok]="livro.status === 'disponivel'"
+        [class.bad]="livro.status !== 'disponivel'">
+        {{ rotulo[livro.status] }}
+      </span>
+    </div>
+    <app-estrelas [nota]="livro.nota" (avaliar)="darNota($event)"></app-estrelas>
+  </div>
+
+  @if (livro.status === 'disponivel') {
+    <ion-button size="small" class="main" (click)="pedirEmprestimo()">
+      Emprestar
+    </ion-button>
+  }
+</div>
+</file>
+
+<file path="app/components/livro-card/livro-card.component.scss">
+.item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.item strong { font-size: 0.92rem; }
+
+.capa {
+  flex: none;
+  width: 56px;
+  height: 80px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #e2e8f0;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.capa img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.sem-capa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.3rem;
+  color: #64748b;
+}
+.sem-capa small { font-size: 0.55rem; font-weight: 700; }
+
+.info { flex: 1; min-width: 0; }
+
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-top: 4px;
+}
+.badge.ok { background: #dcfce7; color: #166534; }
+.badge.bad { background: #fee2e2; color: #991b1b; }
+
+.main { --background: #78350f; --border-radius: 12px; font-weight: 700; flex: none; }
+</file>
+
+<file path="app/components/livro-card/livro-card.component.ts">
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { IonButton } from '@ionic/angular';
+import { AvaliacaoEvento, Livro, ROTULO_STATUS } from '../../models';
+import { EstrelasComponent } from '../estrelas/estrelas.component';
+
+@Component({
+  selector: 'app-livro-card',
+  templateUrl: './livro-card.component.html',
+  styleUrls: ['./livro-card.component.scss'],
+  imports: [IonButton, EstrelasComponent],
+})
+export class LivroCardComponent {
+  @Input({ required: true }) livro!: Livro;
+
+  @Output() emprestar = new EventEmitter<string>();
+
+  @Output() avaliar = new EventEmitter<AvaliacaoEvento>();
+
+  rotulo = ROTULO_STATUS;
+
+  capaFalhou = false;
+
+  pedirEmprestimo() {
+    this.emprestar.emit(this.livro.id);
+  }
+
+  darNota(nota: number) {
+    this.avaliar.emit({ id: this.livro.id, nota });
+  }
+
+  aoFalharCapa() {
+    this.capaFalhou = true;
+  }
+}
+</file>
+
+<file path="app/home/home.page.html">
+<ion-header>
+  <ion-toolbar class="tb">
+    <ion-title>Biblioteca Livre</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="sair()">sair</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (aviso(); as a) {
+    <div class="aviso" [class.info]="a.ok" [class.erro]="!a.ok">{{ a.mensagem }}</div>
+  }
+
+  @if (esgotado()) {
+    <div class="aviso warn">
+      Todos os livros estão emprestados ou indisponíveis. Volte mais tarde.
+    </div>
+  }
+
+  <div class="filtros">
+    <span *ngFor="let f of filtros" class="chip"
+      [class.on]="filtro() === f.valor" (click)="filtrar(f.valor)">
+      {{ f.rotulo }}
+    </span>
+  </div>
+
+  <div class="filtros">
+    <span class="grupo">Ordenar:</span>
+    <span *ngFor="let o of ordens" class="chip estrela-chip"
+      [class.on]="ordem() === o.valor" (click)="ordenar(o.valor)">
+      {{ o.rotulo }}
+    </span>
+  </div>
+
+  <app-livro-card *ngFor="let livro of livros(); trackBy: porId"
+    [livro]="livro" (emprestar)="emprestar($event)"
+    (avaliar)="avaliar($event)"></app-livro-card>
+
+  @if (livros().length === 0) {
+    <div class="vazio">
+      <strong>{{ mensagemVazio() }}</strong>
+      <span class="muted">Troque o filtro para ver outros livros.</span>
+    </div>
+  }
+
+  <div class="total">
+    <div class="linha"><span>Disponíveis</span><span>{{ totais().disponiveis }}</span></div>
+    <div class="linha"><span>Emprestados</span><span>{{ totais().emprestados }}</span></div>
+    <div class="linha"><span>Indisponíveis</span><span>{{ totais().indisponiveis }}</span></div>
+    <div class="linha g"><span>Total</span><span>{{ totais().total }}</span></div>
+  </div>
+</ion-content>
+</file>
+
+<file path="app/home/home.page.scss">
+.tb {
+  --background: #78350f;
+  --color: #fff;
+  font-weight: 700;
+}
+
+.aviso {
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 8px 0;
+}
+.aviso.info { background: #e0f2fe; color: #075985; }
+.aviso.erro { background: #fee2e2; color: #991b1b; }
+.aviso.warn { background: #fef3c7; color: #92400e; }
+
+.filtros { margin: 8px 0; }
+.grupo {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-right: 6px;
+}
+.chip {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 0.78rem;
+  margin: 0 4px 6px 0;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chip.on { background: #0f766e; color: #fff; }
+.estrela-chip.on { background: #f59e0b; color: #451a03; }
+
+.vazio {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 18px 12px;
+  margin-bottom: 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.92rem;
+}
+.vazio .muted { color: #64748b; font-size: 0.8rem; }
+
+.total {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed #cbd5e1;
+  font-size: 0.92rem;
+}
+.total .linha { display: flex; justify-content: space-between; margin: 4px 0; }
+.total .g { font-size: 1.05rem; font-weight: 800; }
+</file>
+
+<file path="app/home/home.page.spec.ts">
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+
+import { HomePage } from './home.page';
+
+describe('HomePage', () => {
+  let component: HomePage;
+  let fixture: ComponentFixture<HomePage>;
+
+  beforeEach(async () => {
+    fixture = TestBed.createComponent(HomePage);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+</file>
+
+<file path="app/home/home.page.ts">
+import { NgFor } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import {
+  IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar,
+} from '@ionic/angular';
+import { AuthService } from '../auth.service';
+import { LivroCardComponent } from '../components/livro-card/livro-card.component';
+import { LivroService } from '../livro.service';
+import {
+  AvaliacaoEvento, FILTROS_LIVRO, FiltroLivro, Livro, MSG_VAZIO, ORDENS_LIVRO,
+  OrdemLivro, ResultadoAcao,
+} from '../models';
+
+@Component({
+  selector: 'app-home',
+  templateUrl: 'home.page.html',
+  styleUrls: ['home.page.scss'],
+  imports: [
+    NgFor,
+    IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar,
+    LivroCardComponent,
+  ],
+})
+export class HomePage {
+  private auth = inject(AuthService);
+  private router = inject(Router);
+  private livroService = inject(LivroService);
+
+  livros = this.livroService.livrosFiltrados;
+  totais = this.livroService.totais;
+  filtro = this.livroService.filtro;
+  ordem = this.livroService.ordem;
+  esgotado = this.livroService.esgotado;
+
+  filtros = FILTROS_LIVRO;
+  ordens = ORDENS_LIVRO;
+  mensagemVazio = computed(() => MSG_VAZIO[this.filtro()]);
+  aviso = signal<ResultadoAcao | null>(null);
+
+  porId(_: number, livro: Livro) {
+    return livro.id;
+  }
+
+  filtrar(f: FiltroLivro) {
+    this.livroService.definirFiltro(f);
+  }
+
+  ordenar(o: OrdemLivro) {
+    this.livroService.definirOrdem(o);
+  }
+
+  emprestar(id: string) {
+    this.aviso.set(this.livroService.emprestar(id));
+  }
+
+  avaliar(e: AvaliacaoEvento) {
+    this.aviso.set(this.livroService.avaliar(e.id, e.nota));
+  }
+
+  async sair() {
+    await this.auth.sair();
+    await this.router.navigateByUrl('/login', { replaceUrl: true });
+  }
+}
+</file>
+
+<file path="app/login/login.page.html">
+<ion-header>
+  <ion-toolbar class="tb">
+    <ion-title>Biblioteca Livre</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-segment [(ngModel)]="modo" class="seg">
+    <ion-segment-button value="entrar"><ion-label>Entrar</ion-label></ion-segment-button>
+    <ion-segment-button value="cadastrar"><ion-label>Cadastrar</ion-label></ion-segment-button>
+  </ion-segment>
+
+  <ion-list lines="none" class="campos">
+    <ion-item>
+      <ion-input type="email" label="E-mail" labelPlacement="floating"
+        autocomplete="email" [(ngModel)]="email"></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input type="password" label="Senha" labelPlacement="floating"
+        autocomplete="current-password" [(ngModel)]="senha"
+        (keyup.enter)="enviar()"></ion-input>
+    </ion-item>
+  </ion-list>
+
+  @if (erro) {
+    <div class="aviso erro">{{ erro }}</div>
+  }
+
+  <ion-button expand="block" class="main" [disabled]="carregando" (click)="enviar()">
+    @if (carregando) { <ion-spinner name="dots"></ion-spinner> }
+    @else { {{ modo === 'entrar' ? 'Entrar' : 'Criar conta' }} }
+  </ion-button>
+
+  <ion-button expand="block" fill="outline" class="google"
+    [disabled]="carregando" (click)="google()">
+    Entrar com Google
+  </ion-button>
+</ion-content>
+</file>
+
+<file path="app/login/login.page.scss">
+.tb {
+  --background: #78350f;
+  --color: #fff;
+  font-weight: 700;
+}
+.seg { margin-bottom: 12px; }
+.campos ion-item {
+  --background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+.aviso {
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 8px 0;
+}
+.aviso.erro { background: #fee2e2; color: #991b1b; }
+.main { --background: #78350f; --border-radius: 12px; font-weight: 700; margin-top: 10px; }
+.google { --color: #78350f; --border-color: #78350f; --border-radius: 12px; font-weight: 700; }
+</file>
+
+<file path="app/login/login.page.ts">
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import {
+  IonButton, IonContent, IonHeader, IonInput, IonItem, IonList,
+  IonSegment, IonSegmentButton, IonLabel, IonSpinner, IonTitle, IonToolbar,
+} from '@ionic/angular';
+import { AuthService } from '../auth.service';
+
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  templateUrl: './login.page.html',
+  styleUrls: ['./login.page.scss'],
+  imports: [
+    FormsModule, IonButton, IonContent, IonHeader, IonInput, IonItem, IonList,
+    IonSegment, IonSegmentButton, IonLabel, IonSpinner, IonTitle, IonToolbar,
+  ],
+})
+export class LoginPage {
+  modo: 'entrar' | 'cadastrar' = 'entrar';
+  email = '';
+  senha = '';
+  erro = '';
+  carregando = false;
+
+  constructor(private auth: AuthService, private router: Router) {}
+
+  async enviar() {
+    await this.executar(() =>
+      this.modo === 'entrar'
+        ? this.auth.entrar(this.email.trim(), this.senha)
+        : this.auth.cadastrar(this.email.trim(), this.senha),
+    );
+  }
+
+  async google() {
+    await this.executar(() => this.auth.entrarComGoogle());
+  }
+
+  private async executar(acao: () => Promise<unknown>) {
+    this.erro = '';
+    this.carregando = true;
+    try {
+      await acao();
+      await this.router.navigateByUrl('/home', { replaceUrl: true });
+    } catch (e: any) {
+      this.erro = this.auth.traduzirErro(e?.code ?? '');
+    } finally {
+      this.carregando = false;
+    }
+  }
+}
+</file>
+
+<file path="app/models/index.ts">
+export * from './livro.model';
+</file>
+
+<file path="app/models/livro.model.ts">
+export type StatusLivro = 'disponivel' | 'emprestado' | 'indisponivel';
+
+export interface Livro {
+  id: string;
+  titulo: string;
+  status: StatusLivro;
+  nota: number | null;
+  capa?: string;
+}
+
+export const ROTULO_STATUS: Record<StatusLivro, string> = {
+  disponivel: 'disponível',
+  emprestado: 'emprestado',
+  indisponivel: 'indisponível',
+};
+
+export type FiltroLivro = 'todos' | StatusLivro;
+
+export interface TotaisLivros {
+  total: number;
+  disponiveis: number;
+  emprestados: number;
+  indisponiveis: number;
+}
+
+export interface ResultadoAcao {
+  ok: boolean;
+  mensagem: string;
+}
+export type ResultadoEmprestimo = ResultadoAcao;
+export type ResultadoAvaliacao = ResultadoAcao;
+
+export interface AvaliacaoEvento {
+  id: string;
+  nota: number;
+}
+
+export const FILTROS_LIVRO: { valor: FiltroLivro; rotulo: string }[] = [
+  { valor: 'todos', rotulo: 'Todos' },
+  { valor: 'disponivel', rotulo: 'Disponíveis' },
+  { valor: 'emprestado', rotulo: 'Emprestados' },
+  { valor: 'indisponivel', rotulo: 'Indisponíveis' },
+];
+
+export const MSG_VAZIO: Record<FiltroLivro, string> = {
+  todos: 'Nenhum livro na estante',
+  disponivel: 'Nenhum livro disponível agora',
+  emprestado: 'Nenhum livro emprestado',
+  indisponivel: 'Nenhum livro indisponível',
+};
+
+export type OrdemLivro = 'padrao' | 'maior' | 'menor';
+
+export const ORDENS_LIVRO: { valor: OrdemLivro; rotulo: string }[] = [
+  { valor: 'padrao', rotulo: 'Padrão' },
+  { valor: 'maior', rotulo: '★ Mais estrelas' },
+  { valor: 'menor', rotulo: '★ Menos estrelas' },
+];
+</file>
+
+<file path="app/app.component.html">
+<ion-app>
+  <ion-router-outlet></ion-router-outlet>
+</ion-app>
+</file>
+
+<file path="app/app.component.scss">
+
+</file>
+
+<file path="app/app.component.spec.ts">
+import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { AppComponent } from './app.component';
+
+describe('AppComponent', () => {
+  it('should create the app', async () => {
+    await TestBed.configureTestingModule({
+      imports: [AppComponent],
+      providers: [provideRouter([])]
+    }).compileComponents();
+    
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    expect(app).toBeTruthy();
+  });
+});
+</file>
+
+<file path="app/app.component.ts">
+import { Component } from '@angular/core';
+import { IonApp, IonRouterOutlet } from '@ionic/angular';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: 'app.component.html',
+  imports: [IonApp, IonRouterOutlet],
+})
+export class AppComponent {
+  constructor() {}
+}
+</file>
+
+<file path="app/app.routes.ts">
+import { Routes } from '@angular/router';
+import { authGuard } from './auth.guard';
+
+export const routes: Routes = [
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  {
+    path: 'login',
+    loadComponent: () => import('./login/login.page').then((m) => m.LoginPage),
+  },
+  {
+    path: 'home',
+    canActivate: [authGuard],
+    loadComponent: () => import('./home/home.page').then((m) => m.HomePage),
+  },
+  { path: '**', redirectTo: 'login' },
+];
+</file>
+
+<file path="app/auth.guard.ts">
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { AuthService } from './auth.service';
+
+export const authGuard: CanActivateFn = async () => {
+  const user = await inject(AuthService).usuario();
+  return user ? true : inject(Router).createUrlTree(['/login']);
+};
+</file>
+
+<file path="app/auth.service.ts">
+import { Injectable } from '@angular/core';
+import {
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  User,
+} from 'firebase/auth';
+import { auth } from './firebase';
+
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+
+  usuario(): Promise<User | null> {
+    return new Promise((resolve) => {
+      const off = onAuthStateChanged(auth, (u) => {
+        off();
+        resolve(u);
+      });
+    });
+  }
+
+  cadastrar(email: string, senha: string) {
+    return createUserWithEmailAndPassword(auth, email, senha);
+  }
+
+  entrar(email: string, senha: string) {
+    return signInWithEmailAndPassword(auth, email, senha);
+  }
+
+  entrarComGoogle() {
+    return signInWithPopup(auth, new GoogleAuthProvider());
+  }
+
+  sair() {
+    return signOut(auth);
+  }
+
+  traduzirErro(code: string): string {
+    const m: Record<string, string> = {
+      'auth/invalid-email': 'E-mail inválido',
+      'auth/missing-password': 'Informe a senha',
+      'auth/weak-password': 'Senha fraca (mínimo 6 caracteres)',
+      'auth/email-already-in-use': 'Este e-mail já está cadastrado',
+      'auth/invalid-credential': 'E-mail ou senha incorretos',
+      'auth/user-not-found': 'E-mail ou senha incorretos',
+      'auth/wrong-password': 'E-mail ou senha incorretos',
+      'auth/popup-closed-by-user': 'Login com Google cancelado',
+      'auth/popup-blocked': 'O navegador bloqueou o popup',
+      'auth/too-many-requests': 'Muitas tentativas, tente mais tarde',
+    };
+    return m[code] ?? 'Erro ao autenticar';
+  }
+}
+</file>
+
+<file path="app/firebase.ts">
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { environment } from '../environments/environment';
+
+export const app = initializeApp(environment.firebase);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+</file>
+
+<file path="app/livro.service.ts">
+import { Injectable, computed, signal } from '@angular/core';
+import {
+  FiltroLivro, Livro, OrdemLivro, ResultadoAvaliacao, ResultadoEmprestimo,
+  TotaisLivros,
+} from './models';
+
+@Injectable({ providedIn: 'root' })
+export class LivroService {
+  private readonly _livros = signal<Livro[]>([
+    {
+      id: '1', titulo: 'Ordem Paranormal RPG', status: 'disponivel', nota: 4,
+      capa: 'assets/capas/ordem_paranormal.jpg',
+    },
+    {
+      id: '2', titulo: 'Vampiro a Máscara', status: 'disponivel', nota: 5,
+      capa: 'assets/capas/vampiro_a_mascara.jpg',
+    },
+    {
+      id: '3', titulo: 'Umineko When They Cry', status: 'emprestado', nota: 2,
+      capa: 'assets/capas/umineko.jpg',
+    },
+    {
+      id: '4', titulo: 'Fábula Última', status: 'disponivel', nota: null,
+      capa: 'assets/capas/fabula_ultima.jpg',
+    },
+    {
+      id: '5', titulo: 'Tormenta 20', status: 'indisponivel', nota: 4,
+      capa: 'assets/capas/tormenta_20.jpg',
+    },
+  ]);
+  private readonly _filtro = signal<FiltroLivro>('todos');
+  private readonly _ordem = signal<OrdemLivro>('padrao');
+
+  readonly livros = this._livros.asReadonly();
+  readonly filtro = this._filtro.asReadonly();
+  readonly ordem = this._ordem.asReadonly();
+
+  readonly livrosFiltrados = computed<Livro[]>(() => {
+    const f = this._filtro();
+    const base = f === 'todos'
+      ? this._livros()
+      : this._livros().filter((l) => l.status === f);
+    return this.ordenar(base, this._ordem());
+  });
+
+  readonly totais = computed<TotaisLivros>(() => {
+    const lista = this._livros();
+    const conta = (s: Livro['status']) => lista.filter((l) => l.status === s).length;
+    return {
+      total: lista.length,
+      disponiveis: conta('disponivel'),
+      emprestados: conta('emprestado'),
+      indisponiveis: conta('indisponivel'),
+    };
+  });
+
+  readonly esgotado = computed<boolean>(() => {
+    const t = this.totais();
+    return t.total > 0 && t.disponiveis === 0;
+  });
+
+  definirFiltro(filtro: FiltroLivro): void {
+    this._filtro.set(filtro);
+  }
+
+  definirOrdem(ordem: OrdemLivro): void {
+    this._ordem.set(ordem);
+  }
+
+  emprestar(id: string): ResultadoEmprestimo {
+    const livro = this._livros().find((l) => l.id === id);
+
+    if (!livro) {
+      return { ok: false, mensagem: 'Livro não encontrado' };
+    }
+    if (livro.status === 'emprestado') {
+      return { ok: false, mensagem: 'Este livro já está emprestado' };
+    }
+    if (livro.status === 'indisponivel') {
+      return { ok: false, mensagem: 'Este livro está indisponível' };
+    }
+
+    this._livros.update((lista) =>
+      lista.map((l) => (l.id === id ? { ...l, status: 'emprestado' } : l)),
+    );
+    return { ok: true, mensagem: 'Empréstimo registrado' };
+  }
+
+  avaliar(id: string, nota: number): ResultadoAvaliacao {
+    if (!Number.isInteger(nota) || nota < 1 || nota > 5) {
+      return { ok: false, mensagem: 'A nota deve ser de 1 a 5 estrelas' };
+    }
+    const livro = this._livros().find((l) => l.id === id);
+    if (!livro) {
+      return { ok: false, mensagem: 'Livro não encontrado' };
+    }
+
+    this._livros.update((lista) =>
+      lista.map((l) => (l.id === id ? { ...l, nota } : l)),
+    );
+    const plural = nota === 1 ? 'estrela' : 'estrelas';
+    return {
+      ok: true,
+      mensagem: `${livro.titulo}: ${nota} ${plural} registrada`,
+    };
+  }
+
+  private ordenar(lista: Livro[], ordem: OrdemLivro): Livro[] {
+    if (ordem === 'padrao') {
+      return lista;
+    }
+    const sinal = ordem === 'maior' ? -1 : 1;
+    const porTitulo = (a: Livro, b: Livro) =>
+      a.titulo.localeCompare(b.titulo, 'pt-BR');
+
+    return [...lista].sort((a, b) => {
+      if (a.nota === null && b.nota === null) return porTitulo(a, b);
+      if (a.nota === null) return 1;
+      if (b.nota === null) return -1;
+      return (a.nota - b.nota) * sinal || porTitulo(a, b);
+    });
+  }
+}
+</file>
+
+<file path="assets/shapes.svg">
+<svg width="350" height="140" xmlns="http://www.w3.org/2000/svg" style="background:#f6f7f9"><g fill="none" fill-rule="evenodd"><path fill="#F04141" style="mix-blend-mode:multiply" d="M61.905-34.23l96.194 54.51-66.982 54.512L22 34.887z"/><circle fill="#10DC60" style="mix-blend-mode:multiply" cx="155.5" cy="135.5" r="57.5"/><path fill="#3880FF" style="mix-blend-mode:multiply" d="M208.538 9.513l84.417 15.392L223.93 93.93z"/><path fill="#FFCE00" style="mix-blend-mode:multiply" d="M268.625 106.557l46.332-26.75 46.332 26.75v53.5l-46.332 26.75-46.332-26.75z"/><circle fill="#7044FF" style="mix-blend-mode:multiply" cx="299.5" cy="9.5" r="38.5"/><rect fill="#11D3EA" style="mix-blend-mode:multiply" transform="rotate(-60 148.47 37.886)" x="143.372" y="-7.056" width="10.196" height="89.884" rx="5.098"/><path d="M-25.389 74.253l84.86 8.107c5.498.525 9.53 5.407 9.004 10.905a10 10 0 0 1-.057.477l-12.36 85.671a10.002 10.002 0 0 1-11.634 8.42l-86.351-15.226c-5.44-.959-9.07-6.145-8.112-11.584l13.851-78.551a10 10 0 0 1 10.799-8.219z" fill="#7044FF" style="mix-blend-mode:multiply"/><circle fill="#0CD1E8" style="mix-blend-mode:multiply" cx="273.5" cy="106.5" r="20.5"/></g></svg>
+</file>
+
+<file path="environments/environment.prod.ts">
+export const environment = {
+  production: true,
+  firebase: {
+    apiKey: 'AIzaSyCgN2Vy7WrYwS8f2e-tW6KLZzRVpAqgsHM',
+    authDomain: 'liga-biblioteca-livre.firebaseapp.com',
+    projectId: 'liga-biblioteca-livre',
+    storageBucket: 'liga-biblioteca-livre.firebasestorage.app',
+    messagingSenderId: '73003746839',
+    appId: '1:73003746839:web:3c53042174c0625fe93e52',
+  },
+};
+</file>
+
+<file path="environments/environment.ts">
+// This file can be replaced during build by using the `fileReplacements` array.
+// `ng build` replaces `environment.ts` with `environment.prod.ts`.
+// The list of file replacements can be found in `angular.json`.
+
+export const environment = {
+  firebase: {
+    apiKey: 'AIzaSyCgN2Vy7WrYwS8f2e-tW6KLZzRVpAqgsHM',
+    authDomain: 'liga-biblioteca-livre.firebaseapp.com',
+    projectId: 'liga-biblioteca-livre',
+    storageBucket: 'liga-biblioteca-livre.firebasestorage.app',
+    messagingSenderId: '73003746839',
+    appId: '1:73003746839:web:3c53042174c0625fe93e52',
+  },
+};
+/*
+ * For easier debugging in development mode, you can import the following file
+ * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
+ *
+ * This import should be commented out in production mode because it will have a negative impact
+ * on performance if an error is thrown.
+ */
+// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.
+</file>
+
+<file path="theme/variables.scss">
+// For information on how to create your own theme, please refer to:
+// https://ionicframework.com/docs/theming/
+</file>
+
+<file path="global.scss">
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+@import '@ionic/angular/css/palettes/dark.system.css';
+</file>
+
+<file path="index.html">
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Ionic App</title>
+
+  <base href="/" />
+
+  <meta name="color-scheme" content="light dark" />
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="msapplication-tap-highlight" content="no" />
+
+  <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
+
+  <!-- add to homescreen for ios -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+</head>
+
+<body>
+  <app-root></app-root>
+</body>
+
+</html>
+</file>
+
+<file path="main.ts">
+import { bootstrapApplication } from '@angular/platform-browser';
+import { RouteReuseStrategy, provideRouter, withComponentInputBinding, withPreloading, PreloadAllModules } from '@angular/router';
+import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
+
+import { routes } from './app/app.routes';
+import { AppComponent } from './app/app.component';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    provideIonicAngular(),
+    provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),
+  ],
+});
+</file>
+
+<file path="test-setup.ts">
+// Polyfills for running unit tests under jsdom (the default Vitest environment).
+// Ionic components such as ion-menu and ion-split-pane query `window.matchMedia`,
+// which jsdom does not implement.
+if (!window.matchMedia) {
+  window.matchMedia = (query: string): MediaQueryList =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      dispatchEvent: () => false,
+    }) as MediaQueryList;
+}
+</file>
+
+</files>
