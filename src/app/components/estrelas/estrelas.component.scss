@@ -11,15 +11,15 @@
   padding: 0 1px;
   font-size: 1.25rem;
   line-height: 1;
-  color: #cbd5e1;
+  color: var(--bl-estrela-vazia);
   cursor: pointer;
 }
-.estrela.cheia { color: #f59e0b; }
+.estrela.cheia { color: var(--bl-estrela); }
 .estrela:hover { transform: scale(1.15); }
 
 .texto {
   margin-left: 6px;
   font-size: 0.72rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--bl-texto-suave);
 }

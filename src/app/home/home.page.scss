@@ -1,7 +1,22 @@
 .tb {
-  --background: #78350f;
+  --background: var(--bl-marca);
   --color: #fff;
   font-weight: 700;
+}
+
+.cabecalho {
+  margin: 4px 0 10px;
+}
+.cabecalho h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--bl-marca);
+}
+.cabecalho p {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--bl-texto-suave);
 }
 
 .aviso {
@@ -11,33 +26,34 @@
   font-weight: 600;
   margin: 8px 0;
 }
-.aviso.info { background: #e0f2fe; color: #075985; }
-.aviso.erro { background: #fee2e2; color: #991b1b; }
-.aviso.warn { background: #fef3c7; color: #92400e; }
+.aviso.info { background: var(--bl-info-bg); color: var(--bl-info-tx); }
+.aviso.erro { background: var(--bl-bad-bg); color: var(--bl-bad-tx); }
+.aviso.warn { background: var(--bl-warn-bg); color: var(--bl-warn-tx); }
 
 .filtros { margin: 8px 0; }
 .grupo {
   font-size: 0.78rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--bl-texto-suave);
   margin-right: 6px;
 }
 .chip {
   display: inline-block;
   padding: 6px 10px;
   border-radius: 999px;
-  background: #f1f5f9;
+  background: var(--bl-chip);
+  color: var(--bl-texto);
   font-size: 0.78rem;
   margin: 0 4px 6px 0;
   font-weight: 600;
   cursor: pointer;
 }
-.chip.on { background: #0f766e; color: #fff; }
-.estrela-chip.on { background: #f59e0b; color: #451a03; }
+.chip.on { background: var(--bl-destaque); color: #fff; }
+.estrela-chip.on { background: var(--bl-estrela); color: #451a03; }
 
 .vazio {
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
+  background: var(--bl-superficie);
+  border: 1px dashed var(--bl-borda);
   border-radius: 12px;
   padding: 18px 12px;
   margin-bottom: 8px;
@@ -47,13 +63,21 @@
   gap: 4px;
   font-size: 0.92rem;
 }
-.vazio .muted { color: #64748b; font-size: 0.8rem; }
+.vazio .muted { color: var(--bl-texto-suave); font-size: 0.8rem; }
 
 .total {
   margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px dashed #cbd5e1;
+  border-top: 1px dashed var(--bl-borda);
   font-size: 0.92rem;
+}
+.total-titulo {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bl-texto-suave);
+  margin-bottom: 4px;
 }
 .total .linha { display: flex; justify-content: space-between; margin: 4px 0; }
 .total .g { font-size: 1.05rem; font-weight: 800; }

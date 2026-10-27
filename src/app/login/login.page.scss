@@ -1,12 +1,27 @@
 .tb {
-  --background: #78350f;
+  --background: var(--bl-marca);
   --color: #fff;
   font-weight: 700;
 }
+
+.boas-vindas { margin: 4px 0 14px; }
+.boas-vindas h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--bl-marca);
+}
+.boas-vindas p {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  color: var(--bl-texto-suave);
+}
+
 .seg { margin-bottom: 12px; }
 .campos ion-item {
-  --background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  --background: var(--bl-superficie);
+  --color: var(--bl-texto);
+  border: 1px solid var(--bl-borda);
   border-radius: 12px;
   margin-bottom: 8px;
 }
@@ -17,6 +32,6 @@
   font-weight: 600;
   margin: 8px 0;
 }
-.aviso.erro { background: #fee2e2; color: #991b1b; }
-.main { --background: #78350f; --border-radius: 12px; font-weight: 700; margin-top: 10px; }
-.google { --color: #78350f; --border-color: #78350f; --border-radius: 12px; font-weight: 700; }
+.aviso.erro { background: var(--bl-bad-bg); color: var(--bl-bad-tx); }
+.main { --background: var(--bl-acao); --color: #fff; --border-radius: 12px; font-weight: 700; margin-top: 10px; }
+.google { --color: var(--bl-acao); --border-color: var(--bl-acao); --border-radius: 12px; font-weight: 700; }

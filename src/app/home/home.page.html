@@ -8,13 +8,19 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <div class="cabecalho">
+    <h1>Estante da turma</h1>
+    <p>Pegue um livro emprestado e deixe sua nota em estrelas.</p>
+  </div>
+
   @if (aviso(); as a) {
     <div class="aviso" [class.info]="a.ok" [class.erro]="!a.ok">{{ a.mensagem }}</div>
   }
 
   @if (esgotado()) {
     <div class="aviso warn">
-      Todos os livros estão emprestados ou indisponíveis. Volte mais tarde.
+      A estante está vazia por enquanto: todos os livros estão emprestados ou
+      indisponíveis. Volte mais tarde.
     </div>
   }
 
@@ -26,7 +32,7 @@
   </div>
 
   <div class="filtros">
-    <span class="grupo">Ordenar:</span>
+    <span class="grupo">Ordenar por nota:</span>
     <span *ngFor="let o of ordens" class="chip estrela-chip"
       [class.on]="ordem() === o.valor" (click)="ordenar(o.valor)">
       {{ o.rotulo }}
@@ -45,9 +51,10 @@
   }
 
   <div class="total">
+    <div class="total-titulo">Resumo da estante</div>
     <div class="linha"><span>Disponíveis</span><span>{{ totais().disponiveis }}</span></div>
     <div class="linha"><span>Emprestados</span><span>{{ totais().emprestados }}</span></div>
     <div class="linha"><span>Indisponíveis</span><span>{{ totais().indisponiveis }}</span></div>
-    <div class="linha g"><span>Total</span><span>{{ totais().total }}</span></div>
+    <div class="linha g"><span>Total de livros</span><span>{{ totais().total }}</span></div>
   </div>
 </ion-content>

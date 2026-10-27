@@ -5,7 +5,12 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-segment [(ngModel)]="modo" class="seg">
+  <div class="boas-vindas">
+    <h1>Bem-vindo à estante</h1>
+    <p>Entre para pegar livros emprestados, avaliar e ver o que a turma está lendo.</p>
+  </div>
+
+  <ion-segment [(ngModel)]="modo" (ionChange)="erro = ''" class="seg">
     <ion-segment-button value="entrar"><ion-label>Entrar</ion-label></ion-segment-button>
     <ion-segment-button value="cadastrar"><ion-label>Cadastrar</ion-label></ion-segment-button>
   </ion-segment>
@@ -17,8 +22,8 @@
     </ion-item>
     <ion-item>
       <ion-input type="password" label="Senha" labelPlacement="floating"
-        autocomplete="current-password" [(ngModel)]="senha"
-        (keyup.enter)="enviar()"></ion-input>
+        [autocomplete]="modo === 'entrar' ? 'current-password' : 'new-password'"
+        [(ngModel)]="senha" (keyup.enter)="enviar()"></ion-input>
     </ion-item>
   </ion-list>
 
@@ -28,7 +33,7 @@
 
   <ion-button expand="block" class="main" [disabled]="carregando" (click)="enviar()">
     @if (carregando) { <ion-spinner name="dots"></ion-spinner> }
-    @else { {{ modo === 'entrar' ? 'Entrar' : 'Criar conta' }} }
+    @else { {{ modo === 'entrar' ? 'Entrar na biblioteca' : 'Criar minha conta' }} }
   </ion-button>
 
   <ion-button expand="block" fill="outline" class="google"

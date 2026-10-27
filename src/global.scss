@@ -35,3 +35,70 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/**
+ * Tema Biblioteca Livre
+ * -----------------------------------------------------
+ * Cores do PRINTS.html: marrom #78350f (toolbar e botões), badges verde e
+ * vermelho, chip ativo verde-azulado. Os componentes usam só estas variáveis.
+ */
+:root {
+  /* Marca */
+  --bl-marca: #78350f;
+  --bl-acao: #78350f;
+  --bl-destaque: #0f766e;
+  --bl-estrela: #f59e0b;
+  --bl-estrela-vazia: #d6cbbd;
+
+  /* Superfícies e texto */
+  --bl-fundo: #fdf8f3;
+  --bl-superficie: #ffffff;
+  --bl-borda: #e7d9c8;
+  --bl-chip: #f3e9dc;
+  --bl-texto: #292524;
+  --bl-texto-suave: #78716c;
+
+  /* Badges e avisos */
+  --bl-ok-bg: #dcfce7;   --bl-ok-tx: #166534;
+  --bl-bad-bg: #fee2e2;  --bl-bad-tx: #991b1b;
+  --bl-warn-bg: #fef3c7; --bl-warn-tx: #92400e;
+  --bl-info-bg: #e0f2fe; --bl-info-tx: #075985;
+
+  /* Cor primária do Ionic (segmentos, spinner, botões sem classe) */
+  --ion-color-primary: #78350f;
+  --ion-color-primary-rgb: 120, 53, 15;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #6a2f0d;
+  --ion-color-primary-tint: #86491e;
+}
+
+/* Modo escuro: a marca marrom continua, mas as superfícies viram "madeira escura". */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bl-acao: #b45309;
+    --bl-estrela-vazia: #5b4a3c;
+
+    --bl-fundo: #1c1410;
+    --bl-superficie: #2a1f18;
+    --bl-borda: #4a3628;
+    --bl-chip: #3a2a20;
+    --bl-texto: #f5ebe0;
+    --bl-texto-suave: #b8a595;
+
+    --bl-ok-bg: #14532d;   --bl-ok-tx: #bbf7d0;
+    --bl-bad-bg: #7f1d1d;  --bl-bad-tx: #fecaca;
+    --bl-warn-bg: #422006; --bl-warn-tx: #fde68a;
+    --bl-info-bg: #0c4a6e; --bl-info-tx: #bae6fd;
+
+    --ion-color-primary: #b45309;
+    --ion-color-primary-rgb: 180, 83, 9;
+    --ion-color-primary-shade: #9f4a08;
+    --ion-color-primary-tint: #bc6422;
+  }
+}
+
+ion-content {
+  --background: var(--bl-fundo);
+  --color: var(--bl-texto);
+}
