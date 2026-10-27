@@ -47,8 +47,14 @@
   border-radius: 999px;
   margin-top: 4px;
 }
-.badge.ok { background: var(--bl-ok-bg); color: var(--bl-ok-tx); }
-.badge.bad { background: var(--bl-bad-bg); color: var(--bl-bad-tx); }
+
+.badge.ok { background: var(--bl-ok-bg); 
+  color: var(--bl-ok-tx); 
+}
+
+.badge.bad { background: var(--bl-bad-bg); 
+  color: var(--bl-bad-tx); 
+}
 
 .main { --background: var(--bl-acao); --color: #fff; --border-radius: 12px; font-weight: 700; flex: none; }
 .bloqueado {
@@ -57,4 +63,16 @@
   --border-radius: 12px;
   font-weight: 700;
   flex: none;
+}
+
+.badge.meu { background: var(--bl-info-bg); 
+  color: var(--bl-info-tx); 
+  margin-left: 4px; 
+}
+
+.devolver { --background: var(--bl-destaque); 
+  --color: #fff; 
+  --border-radius: 12px; 
+  font-weight: 700; 
+  flex: none; 
 }

@@ -13,6 +13,11 @@
     <p>Pegue um livro emprestado e deixe sua nota em estrelas.</p>
   </div>
 
+  <ion-searchbar class="busca" placeholder="Pesquisar livro pelo nome"
+  [debounce]="200" [value]="busca()"
+  (ionInput)="pesquisar($event.detail.value)">
+  </ion-searchbar>
+
   @if (aviso(); as a) {
     <div class="aviso" [class.info]="a.ok" [class.erro]="!a.ok">{{ a.mensagem }}</div>
   }
@@ -40,13 +45,14 @@
   </div>
 
   <app-livro-card *ngFor="let livro of livros(); trackBy: porId"
-    [livro]="livro" (emprestar)="emprestar($event)"
-    (avaliar)="avaliar($event)"></app-livro-card>
+  [livro]="livro" [meu]="souDono(livro)"
+  (emprestar)="emprestar($event)" (devolver)="devolver($event)"
+  (avaliar)="avaliar($event)"></app-livro-card>
 
   @if (livros().length === 0) {
     <div class="vazio">
       <strong>{{ mensagemVazio() }}</strong>
-      <span class="muted">Troque o filtro para ver outros livros.</span>
+      <span class="muted">Troque o filtro ou o texto da busca para ver outros livros.</span>
     </div>
   }
 
@@ -55,6 +61,7 @@
     <div class="linha"><span>Disponíveis</span><span>{{ totais().disponiveis }}</span></div>
     <div class="linha"><span>Emprestados</span><span>{{ totais().emprestados }}</span></div>
     <div class="linha"><span>Indisponíveis</span><span>{{ totais().indisponiveis }}</span></div>
+    <div class="linha"><span>Seus empréstimos</span><span>{{ meus() }}/{{ limite }}</span></div>
     <div class="linha g"><span>Total de livros</span><span>{{ totais().total }}</span></div>
   </div>
 </ion-content>

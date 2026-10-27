@@ -6,6 +6,7 @@ export interface Livro {
   status: StatusLivro;
   nota: number | null;
   capa?: string;
+  emprestadoPor?: string | null;
 }
 
 export const ROTULO_STATUS: Record<StatusLivro, string> = {
@@ -57,13 +58,19 @@ export const ORDENS_LIVRO: { valor: OrdemLivro; rotulo: string }[] = [
   { valor: 'menor', rotulo: '★ Menos estrelas' },
 ];
 
+export const LIMITE_EMPRESTIMOS = 2;
+
 export interface RegistroEmprestimo {
   livroId: string;
   titulo: string;
-  acao: 'emprestar';
+  acao: 'emprestar' | 'devolver';  
   statusAnterior: StatusLivro;
   status: StatusLivro;
   usuarioUid: string | null;
   usuarioEmail: string | null;
   totais: TotaisLivros;
 }
+
+
+
+

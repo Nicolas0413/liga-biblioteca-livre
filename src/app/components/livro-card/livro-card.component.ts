@@ -31,4 +31,11 @@ export class LivroCardComponent {
   aoFalharCapa() {
     this.capaFalhou = true;
   }
+  @Input() meu = false;
+  @Output() devolver = new EventEmitter<string>();
+
+  pedirDevolucao() {
+    this.devolver.emit(this.livro.id);
+  }
 }
+

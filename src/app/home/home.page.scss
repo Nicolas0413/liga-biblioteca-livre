@@ -79,5 +79,22 @@
   color: var(--bl-texto-suave);
   margin-bottom: 4px;
 }
-.total .linha { display: flex; justify-content: space-between; margin: 4px 0; }
-.total .g { font-size: 1.05rem; font-weight: 800; }
+
+.total .linha { display: flex; 
+  justify-content: space-between; 
+  margin: 4px 0; 
+}
+
+.total .g { font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.busca {
+  --background: var(--bl-superficie);
+  --color: var(--bl-texto);
+  --placeholder-color: var(--bl-texto-suave);
+  --icon-color: var(--bl-marca);
+  --border-radius: 12px;
+  padding: 0;
+  margin: 4px 0 8px;
+}
