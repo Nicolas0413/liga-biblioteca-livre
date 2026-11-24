@@ -73,8 +73,15 @@ app/
   livro.service.ts
 assets/
   capas/
+    3det.jpg
+    assimilacao.jpg
+    call_of_cthulhu.jpg
+    cyberpunk.jpg
+    dnd.jpg
     fabula_ultima.jpg
+    mago_a_ascensao.jpg
     ordem_paranormal.jpg
+    som_das_seis.jpg
     tormenta_20.jpg
     umineko.jpg
     vampiro_a_mascara.jpg
@@ -119,17 +126,17 @@ This section contains the contents of the repository's files.
   padding: 0 1px;
   font-size: 1.25rem;
   line-height: 1;
-  color: #cbd5e1;
+  color: var(--bl-estrela-vazia);
   cursor: pointer;
 }
-.estrela.cheia { color: #f59e0b; }
+.estrela.cheia { color: var(--bl-estrela); }
 .estrela:hover { transform: scale(1.15); }
 
 .texto {
   margin-left: 6px;
   font-size: 0.72rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--bl-texto-suave);
 }
 </file>
 
@@ -176,22 +183,33 @@ export class EstrelasComponent {
         [class.bad]="livro.status !== 'disponivel'">
         {{ rotulo[livro.status] }}
       </span>
+      @if (meu) { <span class="badge meu">com você</span> }
     </div>
     <app-estrelas [nota]="livro.nota" (avaliar)="darNota($event)"></app-estrelas>
   </div>
 
-  @if (livro.status === 'disponivel') {
-    <ion-button size="small" class="main" (click)="pedirEmprestimo()">
-      Emprestar
-    </ion-button>
-  }
+@if (livro.status === 'disponivel') {
+  <ion-button size="small" class="main" (click)="pedirEmprestimo()">
+    Emprestar
+  </ion-button>
+} @else if (meu) {
+  <ion-button size="small" class="devolver" (click)="pedirDevolucao()">
+    Devolver
+  </ion-button>
+} @else {
+  <ion-button size="small" class="bloqueado" disabled
+    [attr.aria-label]="'Empréstimo bloqueado: livro ' + rotulo[livro.status]">
+    —
+  </ion-button>
+}
+
 </div>
 </file>
 
 <file path="app/components/livro-card/livro-card.component.scss">
 .item {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--bl-superficie);
+  border: 1px solid var(--bl-borda);
   border-radius: 12px;
   padding: 10px 12px;
   margin-bottom: 8px;
@@ -199,7 +217,7 @@ export class EstrelasComponent {
   gap: 10px;
   align-items: center;
 }
-.item strong { font-size: 0.92rem; }
+.item strong { font-size: 0.92rem; color: var(--bl-texto); }
 
 .capa {
   flex: none;
@@ -207,8 +225,8 @@ export class EstrelasComponent {
   height: 80px;
   border-radius: 6px;
   overflow: hidden;
-  background: #e2e8f0;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+  background: var(--bl-borda);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -224,7 +242,7 @@ export class EstrelasComponent {
   flex-direction: column;
   align-items: center;
   font-size: 1.3rem;
-  color: #64748b;
+  color: var(--bl-texto-suave);
 }
 .sem-capa small { font-size: 0.55rem; font-weight: 700; }
 
@@ -238,10 +256,35 @@ export class EstrelasComponent {
   border-radius: 999px;
   margin-top: 4px;
 }
-.badge.ok { background: #dcfce7; color: #166534; }
-.badge.bad { background: #fee2e2; color: #991b1b; }
 
-.main { --background: #78350f; --border-radius: 12px; font-weight: 700; flex: none; }
+.badge.ok { background: var(--bl-ok-bg); 
+  color: var(--bl-ok-tx); 
+}
+
+.badge.bad { background: var(--bl-bad-bg); 
+  color: var(--bl-bad-tx); 
+}
+
+.main { --background: var(--bl-acao); --color: #fff; --border-radius: 12px; font-weight: 700; flex: none; }
+.bloqueado {
+  --background: var(--bl-chip);
+  --color: var(--bl-texto-suave);
+  --border-radius: 12px;
+  font-weight: 700;
+  flex: none;
+}
+
+.badge.meu { background: var(--bl-info-bg); 
+  color: var(--bl-info-tx); 
+  margin-left: 4px; 
+}
+
+.devolver { --background: var(--bl-destaque); 
+  --color: #fff; 
+  --border-radius: 12px; 
+  font-weight: 700; 
+  flex: none; 
+}
 </file>
 
 <file path="app/components/livro-card/livro-card.component.ts">
@@ -278,6 +321,12 @@ export class LivroCardComponent {
   aoFalharCapa() {
     this.capaFalhou = true;
   }
+  @Input() meu = false;
+  @Output() devolver = new EventEmitter<string>();
+
+  pedirDevolucao() {
+    this.devolver.emit(this.livro.id);
+  }
 }
 </file>
 
@@ -292,13 +341,24 @@ export class LivroCardComponent {
 </ion-header>
 
 <ion-content class="ion-padding">
+  <div class="cabecalho">
+    <h1>Estante da turma</h1>
+    <p>Pegue um livro emprestado e deixe sua nota em estrelas.</p>
+  </div>
+
+  <ion-searchbar class="busca" placeholder="Pesquisar livro pelo nome"
+  [debounce]="200" [value]="busca()"
+  (ionInput)="pesquisar($event.detail.value)">
+  </ion-searchbar>
+
   @if (aviso(); as a) {
     <div class="aviso" [class.info]="a.ok" [class.erro]="!a.ok">{{ a.mensagem }}</div>
   }
 
   @if (esgotado()) {
     <div class="aviso warn">
-      Todos os livros estão emprestados ou indisponíveis. Volte mais tarde.
+      A estante está vazia por enquanto: todos os livros estão emprestados ou
+      indisponíveis. Volte mais tarde.
     </div>
   }
 
@@ -310,7 +370,7 @@ export class LivroCardComponent {
   </div>
 
   <div class="filtros">
-    <span class="grupo">Ordenar:</span>
+    <span class="grupo">Ordenar por nota:</span>
     <span *ngFor="let o of ordens" class="chip estrela-chip"
       [class.on]="ordem() === o.valor" (click)="ordenar(o.valor)">
       {{ o.rotulo }}
@@ -318,30 +378,48 @@ export class LivroCardComponent {
   </div>
 
   <app-livro-card *ngFor="let livro of livros(); trackBy: porId"
-    [livro]="livro" (emprestar)="emprestar($event)"
-    (avaliar)="avaliar($event)"></app-livro-card>
+  [livro]="livro" [meu]="souDono(livro)"
+  (emprestar)="emprestar($event)" (devolver)="devolver($event)"
+  (avaliar)="avaliar($event)"></app-livro-card>
 
   @if (livros().length === 0) {
     <div class="vazio">
       <strong>{{ mensagemVazio() }}</strong>
-      <span class="muted">Troque o filtro para ver outros livros.</span>
+      <span class="muted">Troque o filtro ou o texto da busca para ver outros livros.</span>
     </div>
   }
 
   <div class="total">
+    <div class="total-titulo">Resumo da estante</div>
     <div class="linha"><span>Disponíveis</span><span>{{ totais().disponiveis }}</span></div>
     <div class="linha"><span>Emprestados</span><span>{{ totais().emprestados }}</span></div>
     <div class="linha"><span>Indisponíveis</span><span>{{ totais().indisponiveis }}</span></div>
-    <div class="linha g"><span>Total</span><span>{{ totais().total }}</span></div>
+    <div class="linha"><span>Seus empréstimos</span><span>{{ meus() }}/{{ limite }}</span></div>
+    <div class="linha g"><span>Total de livros</span><span>{{ totais().total }}</span></div>
   </div>
 </ion-content>
 </file>
 
 <file path="app/home/home.page.scss">
 .tb {
-  --background: #78350f;
+  --background: var(--bl-marca);
   --color: #fff;
   font-weight: 700;
+}
+
+.cabecalho {
+  margin: 4px 0 10px;
+}
+.cabecalho h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--bl-marca);
+}
+.cabecalho p {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--bl-texto-suave);
 }
 
 .aviso {
@@ -351,33 +429,34 @@ export class LivroCardComponent {
   font-weight: 600;
   margin: 8px 0;
 }
-.aviso.info { background: #e0f2fe; color: #075985; }
-.aviso.erro { background: #fee2e2; color: #991b1b; }
-.aviso.warn { background: #fef3c7; color: #92400e; }
+.aviso.info { background: var(--bl-info-bg); color: var(--bl-info-tx); }
+.aviso.erro { background: var(--bl-bad-bg); color: var(--bl-bad-tx); }
+.aviso.warn { background: var(--bl-warn-bg); color: var(--bl-warn-tx); }
 
 .filtros { margin: 8px 0; }
 .grupo {
   font-size: 0.78rem;
   font-weight: 700;
-  color: #64748b;
+  color: var(--bl-texto-suave);
   margin-right: 6px;
 }
 .chip {
   display: inline-block;
   padding: 6px 10px;
   border-radius: 999px;
-  background: #f1f5f9;
+  background: var(--bl-chip);
+  color: var(--bl-texto);
   font-size: 0.78rem;
   margin: 0 4px 6px 0;
   font-weight: 600;
   cursor: pointer;
 }
-.chip.on { background: #0f766e; color: #fff; }
-.estrela-chip.on { background: #f59e0b; color: #451a03; }
+.chip.on { background: var(--bl-destaque); color: #fff; }
+.estrela-chip.on { background: var(--bl-estrela); color: #451a03; }
 
 .vazio {
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
+  background: var(--bl-superficie);
+  border: 1px dashed var(--bl-borda);
   border-radius: 12px;
   padding: 18px 12px;
   margin-bottom: 8px;
@@ -387,16 +466,41 @@ export class LivroCardComponent {
   gap: 4px;
   font-size: 0.92rem;
 }
-.vazio .muted { color: #64748b; font-size: 0.8rem; }
+.vazio .muted { color: var(--bl-texto-suave); font-size: 0.8rem; }
 
 .total {
   margin-top: 12px;
   padding-top: 10px;
-  border-top: 1px dashed #cbd5e1;
+  border-top: 1px dashed var(--bl-borda);
   font-size: 0.92rem;
 }
-.total .linha { display: flex; justify-content: space-between; margin: 4px 0; }
-.total .g { font-size: 1.05rem; font-weight: 800; }
+.total-titulo {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bl-texto-suave);
+  margin-bottom: 4px;
+}
+
+.total .linha { display: flex; 
+  justify-content: space-between; 
+  margin: 4px 0; 
+}
+
+.total .g { font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.busca {
+  --background: var(--bl-superficie);
+  --color: var(--bl-texto);
+  --placeholder-color: var(--bl-texto-suave);
+  --icon-color: var(--bl-marca);
+  --border-radius: 12px;
+  padding: 0;
+  margin: 4px 0 8px;
+}
 </file>
 
 <file path="app/home/home.page.spec.ts">
@@ -422,17 +526,17 @@ describe('HomePage', () => {
 
 <file path="app/home/home.page.ts">
 import { NgFor } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
-  IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar,
+  IonButton, IonButtons, IonContent, IonHeader, IonSearchbar, IonTitle, IonToolbar,
 } from '@ionic/angular';
 import { AuthService } from '../auth.service';
 import { LivroCardComponent } from '../components/livro-card/livro-card.component';
 import { LivroService } from '../livro.service';
 import {
   AvaliacaoEvento, FILTROS_LIVRO, FiltroLivro, Livro, MSG_VAZIO, ORDENS_LIVRO,
-  OrdemLivro, ResultadoAcao,
+  OrdemLivro, ResultadoAcao, LIMITE_EMPRESTIMOS, 
 } from '../models';
 
 @Component({
@@ -441,11 +545,11 @@ import {
   styleUrls: ['home.page.scss'],
   imports: [
     NgFor,
-    IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar,
+    IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, IonSearchbar,
     LivroCardComponent,
   ],
 })
-export class HomePage {
+export class HomePage implements OnInit {
   private auth = inject(AuthService);
   private router = inject(Router);
   private livroService = inject(LivroService);
@@ -458,8 +562,16 @@ export class HomePage {
 
   filtros = FILTROS_LIVRO;
   ordens = ORDENS_LIVRO;
-  mensagemVazio = computed(() => MSG_VAZIO[this.filtro()]);
+  mensagemVazio = computed(() =>
+  this.busca().trim()
+    ? `Nenhum livro encontrado para "${this.busca().trim()}"`
+    : MSG_VAZIO[this.filtro()],
+  );
   aviso = signal<ResultadoAcao | null>(null);
+
+  ngOnInit() {
+    this.livroService.carregar();
+  }
 
   porId(_: number, livro: Livro) {
     return livro.id;
@@ -473,8 +585,14 @@ export class HomePage {
     this.livroService.definirOrdem(o);
   }
 
-  emprestar(id: string) {
-    this.aviso.set(this.livroService.emprestar(id));
+  busca = this.livroService.busca;
+
+  pesquisar(texto: string | null | undefined) {
+  this.livroService.definirBusca(texto ?? '');
+  }
+  
+  async emprestar(id: string) {
+    this.aviso.set(await this.livroService.emprestar(id));
   }
 
   avaliar(e: AvaliacaoEvento) {
@@ -484,6 +602,17 @@ export class HomePage {
   async sair() {
     await this.auth.sair();
     await this.router.navigateByUrl('/login', { replaceUrl: true });
+  }
+
+  meus = this.livroService.meusEmprestimos;
+  limite = LIMITE_EMPRESTIMOS;
+
+  souDono(livro: Livro) {
+    return this.livroService.souDono(livro);
+  }
+
+  async devolver(id: string) {
+    this.aviso.set(await this.livroService.devolver(id));
   }
 }
 </file>
@@ -496,7 +625,12 @@ export class HomePage {
 </ion-header>
 
 <ion-content class="ion-padding">
-  <ion-segment [(ngModel)]="modo" class="seg">
+  <div class="boas-vindas">
+    <h1>Bem-vindo à estante</h1>
+    <p>Entre para pegar livros emprestados, avaliar e ver o que a turma está lendo.</p>
+  </div>
+
+  <ion-segment [(ngModel)]="modo" (ionChange)="erro = ''" class="seg">
     <ion-segment-button value="entrar"><ion-label>Entrar</ion-label></ion-segment-button>
     <ion-segment-button value="cadastrar"><ion-label>Cadastrar</ion-label></ion-segment-button>
   </ion-segment>
@@ -508,8 +642,8 @@ export class HomePage {
     </ion-item>
     <ion-item>
       <ion-input type="password" label="Senha" labelPlacement="floating"
-        autocomplete="current-password" [(ngModel)]="senha"
-        (keyup.enter)="enviar()"></ion-input>
+        [autocomplete]="modo === 'entrar' ? 'current-password' : 'new-password'"
+        [(ngModel)]="senha" (keyup.enter)="enviar()"></ion-input>
     </ion-item>
   </ion-list>
 
@@ -519,7 +653,7 @@ export class HomePage {
 
   <ion-button expand="block" class="main" [disabled]="carregando" (click)="enviar()">
     @if (carregando) { <ion-spinner name="dots"></ion-spinner> }
-    @else { {{ modo === 'entrar' ? 'Entrar' : 'Criar conta' }} }
+    @else { {{ modo === 'entrar' ? 'Entrar na biblioteca' : 'Criar minha conta' }} }
   </ion-button>
 
   <ion-button expand="block" fill="outline" class="google"
@@ -531,14 +665,29 @@ export class HomePage {
 
 <file path="app/login/login.page.scss">
 .tb {
-  --background: #78350f;
+  --background: var(--bl-marca);
   --color: #fff;
   font-weight: 700;
 }
+
+.boas-vindas { margin: 4px 0 14px; }
+.boas-vindas h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--bl-marca);
+}
+.boas-vindas p {
+  margin: 4px 0 0;
+  font-size: 0.88rem;
+  color: var(--bl-texto-suave);
+}
+
 .seg { margin-bottom: 12px; }
 .campos ion-item {
-  --background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  --background: var(--bl-superficie);
+  --color: var(--bl-texto);
+  border: 1px solid var(--bl-borda);
   border-radius: 12px;
   margin-bottom: 8px;
 }
@@ -549,9 +698,9 @@ export class HomePage {
   font-weight: 600;
   margin: 8px 0;
 }
-.aviso.erro { background: #fee2e2; color: #991b1b; }
-.main { --background: #78350f; --border-radius: 12px; font-weight: 700; margin-top: 10px; }
-.google { --color: #78350f; --border-color: #78350f; --border-radius: 12px; font-weight: 700; }
+.aviso.erro { background: var(--bl-bad-bg); color: var(--bl-bad-tx); }
+.main { --background: var(--bl-acao); --color: #fff; --border-radius: 12px; font-weight: 700; margin-top: 10px; }
+.google { --color: var(--bl-acao); --border-color: var(--bl-acao); --border-radius: 12px; font-weight: 700; }
 </file>
 
 <file path="app/login/login.page.ts">
@@ -623,6 +772,7 @@ export interface Livro {
   status: StatusLivro;
   nota: number | null;
   capa?: string;
+  emprestadoPor?: string | null;
 }
 
 export const ROTULO_STATUS: Record<StatusLivro, string> = {
@@ -673,6 +823,19 @@ export const ORDENS_LIVRO: { valor: OrdemLivro; rotulo: string }[] = [
   { valor: 'maior', rotulo: '★ Mais estrelas' },
   { valor: 'menor', rotulo: '★ Menos estrelas' },
 ];
+
+export const LIMITE_EMPRESTIMOS = 2;
+
+export interface RegistroEmprestimo {
+  livroId: string;
+  titulo: string;
+  acao: 'emprestar' | 'devolver';  
+  statusAnterior: StatusLivro;
+  status: StatusLivro;
+  usuarioUid: string | null;
+  usuarioEmail: string | null;
+  totais: TotaisLivros;
+}
 </file>
 
 <file path="app/app.component.html">
@@ -819,48 +982,54 @@ export const db = getFirestore(app);
 </file>
 
 <file path="app/livro.service.ts">
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, isDevMode, signal } from '@angular/core';
 import {
-  FiltroLivro, Livro, OrdemLivro, ResultadoAvaliacao, ResultadoEmprestimo,
-  TotaisLivros,
+  collection, doc, getDocs, serverTimestamp, writeBatch,
+} from 'firebase/firestore';
+import { auth, db } from './firebase';
+import {
+  FiltroLivro, LIMITE_EMPRESTIMOS, Livro, OrdemLivro, RegistroEmprestimo,
+  ResultadoAcao, ResultadoAvaliacao, ResultadoEmprestimo, ROTULO_STATUS,
+  StatusLivro, TotaisLivros,
 } from './models';
+
+const LIVROS_INICIAIS: Livro[] = [
+  { id: '1', titulo: 'Ordem Paranormal RPG', status: 'disponivel', nota: 4, capa: 'assets/capas/ordem_paranormal.jpg' },
+  { id: '2', titulo: 'Vampiro a Máscara', status: 'disponivel', nota: 5, capa: 'assets/capas/vampiro_a_mascara.jpg' },
+  { id: '3', titulo: 'Umineko When They Cry', status: 'disponivel', nota: 5, capa: 'assets/capas/umineko.jpg' },
+  { id: '4', titulo: 'Fábula Última', status: 'disponivel', nota: null, capa: 'assets/capas/fabula_ultima.jpg' },
+  { id: '5', titulo: 'Tormenta 20', status: 'disponivel', nota: 4, capa: 'assets/capas/tormenta_20.jpg' },
+  { id: '6', titulo: 'Dungeons & Dragons: Livro do Jogador', status: 'disponivel', nota: 5, capa: 'assets/capas/dnd.jpg' },
+  { id: '7', titulo: 'Call of Cthulhu', status: 'disponivel', nota: 4, capa: 'assets/capas/call_of_cthulhu.jpg' },
+  { id: '8', titulo: 'Cyberpunk RED', status: 'disponivel', nota: 3, capa: 'assets/capas/cyberpunk.jpg' },
+  { id: '9', titulo: '3DeT', status: 'disponivel', nota: null, capa: 'assets/capas/3det.jpg' },
+  { id: '10', titulo: 'Assimilação', status: 'disponivel', nota: 4, capa: 'assets/capas/assimilacao.jpg' },
+  { id: '11', titulo: 'Som das Seis', status: 'disponivel', nota: 3, capa: 'assets/capas/som_das_seis.jpg' },
+  { id: '12', titulo: 'Mago: A Ascensão', status: 'indisponivel', nota: null, capa: 'assets/capas/mago_a_ascensao.jpg' },
+];
 
 @Injectable({ providedIn: 'root' })
 export class LivroService {
-  private readonly _livros = signal<Livro[]>([
-    {
-      id: '1', titulo: 'Ordem Paranormal RPG', status: 'disponivel', nota: 4,
-      capa: 'assets/capas/ordem_paranormal.jpg',
-    },
-    {
-      id: '2', titulo: 'Vampiro a Máscara', status: 'disponivel', nota: 5,
-      capa: 'assets/capas/vampiro_a_mascara.jpg',
-    },
-    {
-      id: '3', titulo: 'Umineko When They Cry', status: 'emprestado', nota: 2,
-      capa: 'assets/capas/umineko.jpg',
-    },
-    {
-      id: '4', titulo: 'Fábula Última', status: 'disponivel', nota: null,
-      capa: 'assets/capas/fabula_ultima.jpg',
-    },
-    {
-      id: '5', titulo: 'Tormenta 20', status: 'indisponivel', nota: 4,
-      capa: 'assets/capas/tormenta_20.jpg',
-    },
-  ]);
+  private readonly _livros = signal<Livro[]>(LIVROS_INICIAIS.map((l) => ({ ...l })));
   private readonly _filtro = signal<FiltroLivro>('todos');
   private readonly _ordem = signal<OrdemLivro>('padrao');
+  private readonly _uid = signal<string | null>(null);
+  private readonly _busca = signal<string>('');
+  readonly busca = this._busca.asReadonly();
 
   readonly livros = this._livros.asReadonly();
   readonly filtro = this._filtro.asReadonly();
   readonly ordem = this._ordem.asReadonly();
+  readonly uid = this._uid.asReadonly();
 
   readonly livrosFiltrados = computed<Livro[]>(() => {
     const f = this._filtro();
-    const base = f === 'todos'
-      ? this._livros()
-      : this._livros().filter((l) => l.status === f);
+    const termo = this.normalizar(this._busca());
+
+    const base = this._livros().filter((l) =>
+      (f === 'todos' || l.status === f) &&
+      (termo === '' || this.normalizar(l.titulo).includes(termo)),
+    );
     return this.ordenar(base, this._ordem());
   });
 
@@ -880,31 +1049,79 @@ export class LivroService {
     return t.total > 0 && t.disponiveis === 0;
   });
 
-  definirFiltro(filtro: FiltroLivro): void {
-    this._filtro.set(filtro);
+  readonly meusEmprestimos = computed<number>(() => this.contarDe(this._uid()));
+
+  constructor() {
+    if (isDevMode()) {
+      (window as any).reiniciarBiblioteca = () => this.reiniciarBanco();
+    }
   }
 
-  definirOrdem(ordem: OrdemLivro): void {
-    this._ordem.set(ordem);
+  definirFiltro(filtro: FiltroLivro): void { this._filtro.set(filtro); }
+  definirOrdem(ordem: OrdemLivro): void { this._ordem.set(ordem); }
+  definirBusca(texto: string): void {
+  this._busca.set(texto ?? '');
   }
 
-  emprestar(id: string): ResultadoEmprestimo {
+  souDono(livro: Livro): boolean {
+    const uid = this._uid();
+    return livro.status === 'emprestado' && !!uid && livro.emprestadoPor === uid;
+  }
+
+  async carregar(): Promise<void> {
+    this._uid.set(auth.currentUser?.uid ?? null);
+    try {
+      const snap = await getDocs(collection(db, 'livros'));
+      const salvos = new Map<string, { status: StatusLivro; por: string | null }>();
+      snap.forEach((d) => {
+        const dados = d.data();
+        const status = dados['status'];
+        if (typeof status === 'string' && status in ROTULO_STATUS) {
+          salvos.set(d.id, {
+            status: status as StatusLivro,
+            por: typeof dados['emprestadoPor'] === 'string' ? dados['emprestadoPor'] : null,
+          });
+        }
+      });
+      this._livros.update((lista) =>
+        lista.map((l) => {
+          const s = salvos.get(l.id);
+          return s ? { ...l, status: s.status, emprestadoPor: s.por } : l;
+        }),
+      );
+    } catch (e) {
+      console.warn('Firestore indisponível, usando a lista local', e);
+    }
+  }
+
+  async emprestar(id: string): Promise<ResultadoEmprestimo> {
     const livro = this._livros().find((l) => l.id === id);
+    const usuario = auth.currentUser;
 
-    if (!livro) {
-      return { ok: false, mensagem: 'Livro não encontrado' };
-    }
-    if (livro.status === 'emprestado') {
-      return { ok: false, mensagem: 'Este livro já está emprestado' };
-    }
-    if (livro.status === 'indisponivel') {
-      return { ok: false, mensagem: 'Este livro está indisponível' };
+    if (!livro) return { ok: false, mensagem: 'Livro não encontrado' };
+    if (!usuario) return { ok: false, mensagem: 'Faça login para pegar livros emprestados' };
+    if (livro.status === 'emprestado') return { ok: false, mensagem: 'Este livro já está emprestado' };
+    if (livro.status === 'indisponivel') return { ok: false, mensagem: 'Este livro está indisponível' };
+    if (this.contarDe(usuario.uid) >= LIMITE_EMPRESTIMOS) {
+      return {
+        ok: false,
+        mensagem: `Limite de ${LIMITE_EMPRESTIMOS} livros emprestados atingido. Devolva um para pegar outro.`,
+      };
     }
 
-    this._livros.update((lista) =>
-      lista.map((l) => (l.id === id ? { ...l, status: 'emprestado' } : l)),
-    );
-    return { ok: true, mensagem: 'Empréstimo registrado' };
+    return this.gravar(livro, 'emprestar', 'emprestado', usuario.uid, 'Empréstimo registrado');
+  }
+
+  async devolver(id: string): Promise<ResultadoAcao> {
+    const livro = this._livros().find((l) => l.id === id);
+    const usuario = auth.currentUser;
+
+    if (!livro) return { ok: false, mensagem: 'Livro não encontrado' };
+    if (!usuario || livro.status !== 'emprestado' || livro.emprestadoPor !== usuario.uid) {
+      return { ok: false, mensagem: 'Só quem pegou o livro pode devolvê-lo' };
+    }
+
+    return this.gravar(livro, 'devolver', 'disponivel', null, 'Devolução registrada');
   }
 
   avaliar(id: string, nota: number): ResultadoAvaliacao {
@@ -912,27 +1129,82 @@ export class LivroService {
       return { ok: false, mensagem: 'A nota deve ser de 1 a 5 estrelas' };
     }
     const livro = this._livros().find((l) => l.id === id);
-    if (!livro) {
-      return { ok: false, mensagem: 'Livro não encontrado' };
-    }
+    if (!livro) return { ok: false, mensagem: 'Livro não encontrado' };
 
-    this._livros.update((lista) =>
-      lista.map((l) => (l.id === id ? { ...l, nota } : l)),
-    );
+    this.atualizar(id, { nota });
     const plural = nota === 1 ? 'estrela' : 'estrelas';
-    return {
-      ok: true,
-      mensagem: `${livro.titulo}: ${nota} ${plural} registrada`,
+    return { ok: true, mensagem: `${livro.titulo}: ${nota} ${plural} registrada` };
+  }
+
+  async reiniciarBanco(): Promise<void> {
+    const lote = writeBatch(db);
+    for (const l of LIVROS_INICIAIS) {
+      lote.set(doc(db, 'livros', l.id), {
+        titulo: l.titulo,
+        status: l.status,
+        emprestadoPor: null,
+      });
+    }
+    const antigos = await getDocs(collection(db, 'emprestimos'));
+    antigos.forEach((d) => lote.delete(d.ref));
+    await lote.commit();
+
+    this._livros.set(LIVROS_INICIAIS.map((l) => ({ ...l })));
+    console.log('Biblioteca reiniciada');
+  }
+
+  private async gravar(
+    livro: Livro,
+    acao: 'emprestar' | 'devolver',
+    novoStatus: StatusLivro,
+    novoDono: string | null,
+    msgOk: string,
+  ): Promise<ResultadoAcao> {
+    const anterior = { status: livro.status, emprestadoPor: livro.emprestadoPor ?? null };
+    this.atualizar(livro.id, { status: novoStatus, emprestadoPor: novoDono });
+
+    const usuario = auth.currentUser;
+    const registro: RegistroEmprestimo = {
+      livroId: livro.id,
+      titulo: livro.titulo,
+      acao,
+      statusAnterior: anterior.status,
+      status: novoStatus,
+      usuarioUid: usuario?.uid ?? null,
+      usuarioEmail: usuario?.email ?? null,
+      totais: this.totais(),
     };
+
+    try {
+      const lote = writeBatch(db);
+      lote.set(
+        doc(db, 'livros', livro.id),
+        { titulo: livro.titulo, status: novoStatus, emprestadoPor: novoDono },
+        { merge: true },
+      );
+      lote.set(doc(collection(db, 'emprestimos')), { ...registro, criadoEm: serverTimestamp() });
+      await lote.commit();
+      return { ok: true, mensagem: msgOk };
+    } catch (e) {
+      this.atualizar(livro.id, anterior);
+      console.error('Erro ao gravar', e);
+      return { ok: false, mensagem: 'Não foi possível gravar. Tente de novo.' };
+    }
+  }
+
+  private contarDe(uid: string | null): number {
+    if (!uid) return 0;
+    return this._livros().filter((l) => l.status === 'emprestado' && l.emprestadoPor === uid).length;
+  }
+
+  private atualizar(id: string, mudanca: Partial<Livro>): void {
+    this._livros.update((lista) => lista.map((l) => (l.id === id ? { ...l, ...mudanca } : l)));
   }
 
   private ordenar(lista: Livro[], ordem: OrdemLivro): Livro[] {
-    if (ordem === 'padrao') {
-      return lista;
-    }
+    if (ordem === 'padrao') return lista;
     const sinal = ordem === 'maior' ? -1 : 1;
-    const porTitulo = (a: Livro, b: Livro) =>
-      a.titulo.localeCompare(b.titulo, 'pt-BR');
+    const porTitulo = (a: Livro, b: Livro) => a.titulo.localeCompare(b.titulo, 'pt-BR');
 
     return [...lista].sort((a, b) => {
       if (a.nota === null && b.nota === null) return porTitulo(a, b);
@@ -940,6 +1212,14 @@ export class LivroService {
       if (b.nota === null) return -1;
       return (a.nota - b.nota) * sinal || porTitulo(a, b);
     });
+  }
+  
+  private normalizar(texto: string): string {
+  return texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
   }
 }
 </file>
@@ -1030,19 +1310,87 @@ export const environment = {
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/**
+ * Tema Biblioteca Livre
+ * -----------------------------------------------------
+ * Cores do PRINTS.html: marrom #78350f (toolbar e botões), badges verde e
+ * vermelho, chip ativo verde-azulado. Os componentes usam só estas variáveis.
+ */
+:root {
+  /* Marca */
+  --bl-marca: #78350f;
+  --bl-acao: #78350f;
+  --bl-destaque: #0f766e;
+  --bl-estrela: #f59e0b;
+  --bl-estrela-vazia: #d6cbbd;
+
+  /* Superfícies e texto */
+  --bl-fundo: #fdf8f3;
+  --bl-superficie: #ffffff;
+  --bl-borda: #e7d9c8;
+  --bl-chip: #f3e9dc;
+  --bl-texto: #292524;
+  --bl-texto-suave: #78716c;
+
+  /* Badges e avisos */
+  --bl-ok-bg: #dcfce7;   --bl-ok-tx: #166534;
+  --bl-bad-bg: #fee2e2;  --bl-bad-tx: #991b1b;
+  --bl-warn-bg: #fef3c7; --bl-warn-tx: #92400e;
+  --bl-info-bg: #e0f2fe; --bl-info-tx: #075985;
+
+  /* Cor primária do Ionic (segmentos, spinner, botões sem classe) */
+  --ion-color-primary: #78350f;
+  --ion-color-primary-rgb: 120, 53, 15;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #6a2f0d;
+  --ion-color-primary-tint: #86491e;
+}
+
+/* Modo escuro: a marca marrom continua, mas as superfícies viram "madeira escura". */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bl-acao: #b45309;
+    --bl-estrela-vazia: #5b4a3c;
+
+    --bl-fundo: #1c1410;
+    --bl-superficie: #2a1f18;
+    --bl-borda: #4a3628;
+    --bl-chip: #3a2a20;
+    --bl-texto: #f5ebe0;
+    --bl-texto-suave: #b8a595;
+
+    --bl-ok-bg: #14532d;   --bl-ok-tx: #bbf7d0;
+    --bl-bad-bg: #7f1d1d;  --bl-bad-tx: #fecaca;
+    --bl-warn-bg: #422006; --bl-warn-tx: #fde68a;
+    --bl-info-bg: #0c4a6e; --bl-info-tx: #bae6fd;
+
+    --ion-color-primary: #b45309;
+    --ion-color-primary-rgb: 180, 83, 9;
+    --ion-color-primary-shade: #9f4a08;
+    --ion-color-primary-tint: #bc6422;
+  }
+}
+
+ion-content {
+  --background: var(--bl-fundo);
+  --color: var(--bl-texto);
+}
 </file>
 
 <file path="index.html">
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 
 <head>
   <meta charset="utf-8" />
-  <title>Ionic App</title>
+  <title>Biblioteca Livre</title>
 
   <base href="/" />
 
   <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#78350f" />
   <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="format-detection" content="telephone=no" />
   <meta name="msapplication-tap-highlight" content="no" />

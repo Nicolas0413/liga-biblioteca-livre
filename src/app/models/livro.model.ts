@@ -7,6 +7,8 @@ export interface Livro {
   nota: number | null;
   capa?: string;
   emprestadoPor?: string | null;
+  categorias?: string[];
+  sinopse?: string;
 }
 
 export const ROTULO_STATUS: Record<StatusLivro, string> = {

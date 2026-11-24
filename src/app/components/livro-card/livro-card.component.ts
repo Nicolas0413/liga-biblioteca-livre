@@ -16,6 +16,12 @@ export class LivroCardComponent {
 
   @Output() avaliar = new EventEmitter<AvaliacaoEvento>();
 
+  @Output() abrir = new EventEmitter<string>();
+
+  abrirDetalhes() {
+    this.abrir.emit(this.livro.id);
+  }
+  
   rotulo = ROTULO_STATUS;
 
   capaFalhou = false;

@@ -2,7 +2,7 @@ import { NgFor } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
-  IonButton, IonButtons, IonContent, IonHeader, IonSearchbar, IonTitle, IonToolbar,
+  IonButton, IonButtons, IonContent, IonHeader, IonModal, IonSearchbar, IonTitle, IonToolbar,
 } from '@ionic/angular';
 import { AuthService } from '../auth.service';
 import { LivroCardComponent } from '../components/livro-card/livro-card.component';
@@ -11,6 +11,7 @@ import {
   AvaliacaoEvento, FILTROS_LIVRO, FiltroLivro, Livro, MSG_VAZIO, ORDENS_LIVRO,
   OrdemLivro, ResultadoAcao, LIMITE_EMPRESTIMOS, 
 } from '../models';
+import { EstrelasComponent } from '../components/estrelas/estrelas.component';
 
 @Component({
   selector: 'app-home',
@@ -18,8 +19,8 @@ import {
   styleUrls: ['home.page.scss'],
   imports: [
     NgFor,
-    IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar, IonSearchbar,
-    LivroCardComponent,
+    IonButton, IonButtons, IonContent, IonHeader, IonModal, IonTitle, IonToolbar, IonSearchbar,
+    LivroCardComponent, EstrelasComponent,
   ],
 })
 export class HomePage implements OnInit {
@@ -86,6 +87,22 @@ export class HomePage implements OnInit {
 
   async devolver(id: string) {
     this.aviso.set(await this.livroService.devolver(id));
+  }
+  modalAberto = signal(false);
+  private detalheId = signal<string | null>(null);
+
+  detalhe = computed(() => {
+    const id = this.detalheId();
+    return id ? this.livroService.livros().find((l) => l.id === id) ?? null : null;
+  });
+
+  abrirDetalhe(id: string) {
+    this.detalheId.set(id);
+    this.modalAberto.set(true);
+  }
+
+  fechar() {
+    this.modalAberto.set(false);
   }
 }
 
